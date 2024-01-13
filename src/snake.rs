@@ -84,6 +84,18 @@ impl Application {
         if self.timer >= 0.15 {
             //println!("timer hit {}", self.timer);
             self.timer = 0.0;
+
+            // Update snake elements
+            self.update_snake();
+
+            // Update snake direction, must be after update_snake()
+            self.snake_direction = self.key_pressed;
+
+            // Print snake elements
+            println!("");
+            for element in &self.list {
+                println!("element ({},{})", element.0, element.1);
+            }
         }
     }
 
@@ -118,5 +130,52 @@ impl Application {
                 }
             }
         }
+    }
+
+    fn update_snake(&mut self) {
+        // Snake head position
+        let element = self.list.front().unwrap();
+
+        let mut next_x_posit = element.0;
+        let mut next_y_posit = element.1;
+
+        match self.key_pressed {
+            Key::Up => {
+                if next_y_posit == 0 {
+                    next_y_posit = GRID_Y_COUNT;
+                } else {
+                    next_y_posit = next_y_posit - 1;
+                }
+            }
+            Key::Down => {
+                if next_y_posit == GRID_Y_COUNT {
+                    next_y_posit = 0;
+                } else {
+                    next_y_posit = next_y_posit + 1;
+                }
+            }
+            Key::Left => {
+                if next_x_posit == 0 {
+                    next_x_posit = GRID_X_COUNT;
+                } else {
+                    next_x_posit = next_x_posit - 1;
+                }
+            }
+            Key::Right => {
+                if next_x_posit == GRID_X_COUNT {
+                    next_x_posit = 0;
+                } else {
+                    next_x_posit = next_x_posit + 1;
+                }
+            }
+            _ => { // Do nothing
+            }
+        }
+
+        // Insert new snake head
+        self.list.push_front((next_x_posit, next_y_posit));
+
+        // Remove snake tail
+        self.list.pop_back();
     }
 }
