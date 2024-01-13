@@ -27,6 +27,7 @@ pub struct Application {
     timer: f64,
     snake_direction: Key,
     key_pressed: Key,
+    collision: bool,
 }
 
 impl Application {
@@ -40,6 +41,7 @@ impl Application {
             timer: 0.0,
             snake_direction: Key::Right,
             key_pressed: Key::Right,
+            collision: false,
         };
         // Snake elements
         app.list.push_back((10, 7));
@@ -85,16 +87,21 @@ impl Application {
             //println!("timer hit {}", self.timer);
             self.timer = 0.0;
 
-            // Update snake elements
-            self.update_snake();
+            if !self.collision {
+                // Update snake elements
+                self.update_snake();
 
-            // Update snake direction, must be after update_snake()
-            self.snake_direction = self.key_pressed;
+                // Update snake direction, must be after update_snake()
+                self.snake_direction = self.key_pressed;
 
-            // Print snake elements
-            println!("");
-            for element in &self.list {
-                println!("element ({},{})", element.0, element.1);
+                // Print snake elements
+                println!("");
+                for element in &self.list {
+                    println!("element ({},{})", element.0, element.1);
+                }
+
+                // Snake collision with itself
+                self.collision = self.check_snake_collision();
             }
         }
     }
@@ -177,5 +184,16 @@ impl Application {
 
         // Remove snake tail
         self.list.pop_back();
+    }
+
+    fn check_snake_collision(&self) -> bool {
+        // Copy list
+        let mut ll = self.list.clone();
+
+        // Remove snake head position and save it
+        let element = ll.pop_front().unwrap();
+
+        // Check if saved head position collides with another element
+        return ll.contains(&element);
     }
 }
