@@ -1,7 +1,7 @@
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::input::{RenderArgs, UpdateArgs};
 use piston::{Button, Key};
-//use rand::prelude::*;
+use rand::prelude::*;
 
 use std::collections::LinkedList;
 
@@ -83,7 +83,7 @@ impl Application {
 
     pub fn update(&mut self, args: &UpdateArgs) {
         self.timer = self.timer + args.dt;
-        if self.timer >= 0.15 {
+        if self.timer >= 0.2 {
             //println!("timer hit {}", self.timer);
             self.timer = 0.0;
 
@@ -95,10 +95,10 @@ impl Application {
                 self.snake_direction = self.key_pressed;
 
                 // Print snake elements
-                println!("");
-                for element in &self.list {
-                    println!("element ({},{})", element.0, element.1);
-                }
+                // println!("");
+                // for element in &self.list {
+                //     println!("element ({},{})", element.0, element.1);
+                // }
 
                 // Snake collision with itself
                 self.collision = self.check_snake_collision();
@@ -182,8 +182,14 @@ impl Application {
         // Insert new snake head
         self.list.push_front((next_x_posit, next_y_posit));
 
-        // Remove snake tail
-        self.list.pop_back();
+        // Check if snake head eats food
+        if next_x_posit == self.food_x_posit && next_y_posit == self.food_y_posit {
+            // Generate random food position
+            self.random_food_position();
+        } else {
+            // Remove snake tail
+            self.list.pop_back();
+        }
     }
 
     fn check_snake_collision(&self) -> bool {
@@ -195,5 +201,25 @@ impl Application {
 
         // Check if saved head position collides with another element
         return ll.contains(&element);
+    }
+
+    fn random_food_position(&mut self) {
+        let mut free_food_posit = Vec::new();
+
+        // Find all positions not used by snake
+        for x in 0..GRID_X_COUNT + 1 {
+            for y in 0..GRID_Y_COUNT + 1 {
+                if !self.list.contains(&(x, y)) {
+                    free_food_posit.push((x, y));
+                }
+            }
+        }
+
+        free_food_posit.shuffle(&mut thread_rng());
+        //println!("{:?}", free_food_posit);
+
+        let element = free_food_posit.pop().unwrap();
+        self.food_x_posit = element.0;
+        self.food_y_posit = element.1;
     }
 }
